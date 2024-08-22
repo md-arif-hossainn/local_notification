@@ -1,13 +1,8 @@
 import 'dart:async';
-import 'dart:io';
-// ignore: unnecessary_import
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:local_notification/screen/secod_page.dart';
-import 'package:timezone/data/latest_all.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 
 import 'screen/home_page.dart';
 
@@ -49,7 +44,7 @@ void notificationTapBackground(NotificationResponse notificationResponse) {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await _configureLocalTimeZone();
+  await _initializeNotifications();
 
   final NotificationAppLaunchDetails? notificationAppLaunchDetails =
   await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
@@ -61,6 +56,19 @@ Future<void> main() async {
     initialRoute = SecondPage.routeName;
   }
 
+  runApp(
+    MaterialApp(
+      initialRoute: initialRoute,
+      routes: <String, WidgetBuilder>{
+        HomePage.routeName: (_) => HomePage(notificationAppLaunchDetails),
+        SecondPage.routeName: (_) => SecondPage(selectedNotificationPayload)
+      },
+    ),
+  );
+}
+
+
+Future<void> _initializeNotifications() async {
 
   const AndroidInitializationSettings initializationSettingsAndroid =
   AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -101,19 +109,4 @@ Future<void> main() async {
     onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
   );
 
-  runApp(
-    MaterialApp(
-      initialRoute: initialRoute,
-      routes: <String, WidgetBuilder>{
-        HomePage.routeName: (_) => HomePage(notificationAppLaunchDetails),
-        SecondPage.routeName: (_) => SecondPage(selectedNotificationPayload)
-      },
-    ),
-  );
-}
-
-Future<void> _configureLocalTimeZone() async {
-  tz.initializeTimeZones();
-  final String? timeZoneName = await FlutterTimezone.getLocalTimezone();
-  tz.setLocalLocation(tz.getLocation(timeZoneName!));
 }
